@@ -14,6 +14,7 @@ namespace PracticeManagementSystem.Tests
             var loginPage = new LoginPage(_page);
             await loginPage.NavigateAsync(ConfigManager.BaseUrl);
             await loginPage.LoginAsync(ConfigManager.Username, ConfigManager.Password);
+            await _page.Locator("#dashboardSelectList").WaitForAsync(new() { Timeout = 20000 });
 
             Assert.IsTrue(await loginPage.IsLoginSuccessfulAsync(), "Login was not successful.");
         }
