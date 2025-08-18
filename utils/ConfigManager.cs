@@ -15,8 +15,9 @@ namespace PracticeManagementSystem.Utils
             config = builder.Build();
         }
 
-        public static string BaseUrl => config["baseUrl"];
-        public static string Username => config["username"];
-        public static string Password => config["password"];
+        public static string BaseUrl => config["BaseUrl"];
+        public static string Username => config["Username"];
+        public static string Password => config["Password"];
+
     }
 }

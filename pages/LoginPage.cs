@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 using System;
 using System.Threading.Tasks;
 
@@ -14,23 +14,14 @@ namespace PracticeManagementSystem.Pages
         private const string PasswordSelector = "#passwordInput";
         private const string SubmitButtonSelector = "#submitButton";
         private const string FuseLogoSelector = "#fuseLogo";
+        private const string ErrorMessageSelector = "#errorText";
 
-        /// <summary>
-        /// Username input locator.
-        /// </summary>
+        // Locators
         private readonly ILocator _usernameInput;
-        /// <summary>
-        /// Password input locator.
-        /// </summary>
         private readonly ILocator _passwordInput;
-        /// <summary>
-        /// Submit button locator.
-        /// </summary>
         private readonly ILocator _submitButton;
-        /// <summary>
-        /// Fuse logo locator.
-        /// </summary>
         private readonly ILocator _fuseLogo;
+        private readonly ILocator _errorMessage;
 
         public LoginPage(IPage page) : base(page)
         {
@@ -38,6 +29,7 @@ namespace PracticeManagementSystem.Pages
             _passwordInput = page.Locator(PasswordSelector);
             _submitButton = page.Locator(SubmitButtonSelector);
             _fuseLogo = page.Locator(FuseLogoSelector);
+            _errorMessage = page.Locator(ErrorMessageSelector);
         }
 
         /// <summary>
@@ -52,41 +44,28 @@ namespace PracticeManagementSystem.Pages
         }
 
         /// <summary>
-        /// Performs login with the provided credentials.
+        /// Performs login with the provided credentials (can be empty for negative tests).
         /// </summary>
         public async Task LoginAsync(string username, string password)
         {
-            if (string.IsNullOrWhiteSpace(username))
-                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
-            if (string.IsNullOrWhiteSpace(password))
-                throw new ArgumentException("Password cannot be null or empty.", nameof(password));
-
-            await WaitAndFillAsync(_usernameInput, username);
-            await WaitAndFillAsync(_passwordInput, password);
-            await WaitAndClickAsync(_submitButton);
+            await _usernameInput.FillAsync(username ?? string.Empty);
+            await _passwordInput.FillAsync(password ?? string.Empty);
+            await _submitButton.ClickAsync();
         }
 
         /// <summary>
-        /// Checks if login was successful by verifying the fuse logo is visible.
+        /// Checks if login was successful by verifying the Fuse logo is visible.
         /// </summary>
         public Task<bool> IsLoginSuccessfulAsync() => _fuseLogo.IsVisibleAsync();
 
         /// <summary>
-        /// Waits for the locator to be visible and fills it with the provided text.
+        /// Gets the error message text if visible.
         /// </summary>
-        private async Task WaitAndFillAsync(ILocator locator, string text)
+        public async Task<string> GetErrorMessageAsync()
         {
-            await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-            await locator.FillAsync(text);
-        }
-
-        /// <summary>
-        /// Waits for the locator to be visible and clicks it.
-        /// </summary>
-        private async Task WaitAndClickAsync(ILocator locator)
-        {
-            await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-            await locator.ClickAsync();
+            if (await _errorMessage.IsVisibleAsync())
+                return await _errorMessage.InnerTextAsync();
+            return string.Empty;
         }
     }
 }
