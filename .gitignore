@@ -1,1 +1,13 @@
-.vs/ 
+# Build
+bin/
+obj/
+
+# Test results
+TestResults/
+test-results/
+
+# Node modules
+node_modules/
+
+# VS/IDE
+.vs/
