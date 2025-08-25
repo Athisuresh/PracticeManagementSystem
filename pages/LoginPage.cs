@@ -10,9 +10,9 @@ namespace PracticeManagementSystem.Pages
     public class LoginPage : BasePage
     {
         // Selector constants
-        private const string UsernameSelector = "#userNameInput";
-        private const string PasswordSelector = "#passwordInput";
-        private const string SubmitButtonSelector = "#submitButton";
+        private const string UsernameSelector = "input[formcontrolname='username']";
+        private const string PasswordSelector = "input[formcontrolname='password']";
+        private const string SubmitButtonSelector = "button[type='submit']:has-text('Login')";
         private const string FuseLogoSelector = "#fuseLogo";
         private const string ErrorMessageSelector = "#errorText";
 
