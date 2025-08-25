@@ -18,16 +18,13 @@ namespace PracticeManagementSystem.Tests
             await loginPage.NavigateAsync(ConfigManager.BaseUrl);
             await loginPage.LoginAsync(ConfigManager.Username, ConfigManager.Password);
 
-            // Optional wait to allow page to load fully
-            await _page.WaitForTimeoutAsync(3000);
+            var homePage = new HomePage(_page);
+            // Wait for the home page to be visible
+            await homePage.WaitForHomePageAsync();
 
-            // Wait for element to appear
-            var titleLocator = _page.GetByText("Patient Portal", new() { Exact = true });
-            await titleLocator.WaitForAsync(new() { Timeout = 20000 });
-
-            Assert.IsTrue(await titleLocator.IsVisibleAsync(), "Patient Portal title not visible.");
-
+            Assert.IsTrue(await homePage.IsHomePageVisibleAsync(), "Home page did not load after login.");
         }
+
 
 
         [TestMethod]
