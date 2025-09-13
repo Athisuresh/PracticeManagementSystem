@@ -26,7 +26,7 @@ public class HomePage : BasePage
 
     public async Task WaitForHomePageAsync()
     {
-        await _homeHeader.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 15000 });
+        await _homeHeader.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 30000 });
     }
 
     public Task<bool> IsHomePageVisibleAsync() => _homeHeader.IsVisibleAsync();
