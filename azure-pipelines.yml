@@ -24,28 +24,10 @@ steps:
     playwright install --with-deps
   displayName: 'Install Playwright Browsers'
 
-# ✅ Start your app in the background
-- script: |
-    start /B dotnet run --project PracticeManagementSystem/PracticeManagementSystem.csproj --urls "http://localhost:5000"
-  displayName: 'Start PracticeManagementSystem Web App'
-
-# ✅ Health check - wait until the app is live before running tests
-- script: |
-    echo "Waiting for app to be ready on http://localhost:5000..."
-    for /l %%x in (1, 1, 30) do (
-      curl -s http://localhost:5000 >nul && exit 0
-      echo "App not ready yet, retrying (%%x/30)..."
-      ping -n 2 127.0.0.1 >nul
-    )
-    echo "App did not start in time" && exit 1
-  displayName: 'Health Check - Wait for App'
-
-# ✅ Run Playwright Tests with BASE_URL override
+# ✅ Run Playwright Tests (default BaseUrl from appsettings.json = Vercel)
 - script: |
     dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
   displayName: 'Run Playwright Tests'
-  env:
-    BASE_URL: "http://localhost:5000"
 
 # Publish test results to Azure DevOps Tests tab
 - task: PublishTestResults@2
