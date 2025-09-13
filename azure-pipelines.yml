@@ -1,36 +1,44 @@
 ﻿trigger:
-- main   # or AutomationProject if that’s your working branch
+- main   # or AutomationProject if that's your branch
 
 pool:
   vmImage: 'windows-latest'
 
 steps:
-# Setup .NET
+# Install .NET 8 SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '8.0.x'
+    version: '8.x'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
-# Restore dependencies
-- script: dotnet restore
-  displayName: 'Restore dependencies'
-
-# Build project
-- script: dotnet build --configuration Release
-  displayName: 'Build project'
-
-# ✅ Install Playwright and required browsers
+# Restore and build solution
 - script: |
-    npx playwright install --with-deps
-  displayName: 'Install Playwright browsers'
+    dotnet restore
+    dotnet build --configuration Release
+  displayName: 'Restore & Build'
 
-# Run tests (Playwright will run headless in CI)
-- script: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
+# Install Playwright browsers
+- script: |
+    dotnet tool install --global Microsoft.Playwright.CLI
+    playwright install --with-deps
+  displayName: 'Install Playwright Browsers'
+
+# ✅ Start your app in the background
+- script: |
+    start /B dotnet run --project PracticeManagementSystem/PracticeManagementSystem.csproj --urls "http://localhost:5000"
+  displayName: 'Start PracticeManagementSystem Web App'
+
+# ✅ Run Playwright Tests with BASE_URL override
+- script: |
+    dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
   displayName: 'Run Playwright Tests'
+  env:
+    BASE_URL: "http://localhost:5000"
 
-# Publish test results to Azure DevOps
+# Publish test results to Azure DevOps Tests tab
 - task: PublishTestResults@2
   inputs:
-    testResultsFormat: 'VSTest'
-    testResultsFiles: '**/*.trx'
-    failTaskOnFailedTests: true
+    testResultsFiles: '**/TestResults/*.trx'
+    testRunTitle: 'Playwright Tests'
+  condition: succeededOrFailed()
