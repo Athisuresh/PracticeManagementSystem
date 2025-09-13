@@ -15,40 +15,51 @@ namespace PracticeManagementSystem.Pages
             _page = page;
         }
 
-        // Search box and button
+        // 🔹 Search box and button
         private ILocator SearchInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Search Patient" });
         private ILocator SearchButton => _page.GetByRole(AriaRole.Button, new() { Name = "Search" });
 
-        // Table rows
+        // 🔹 Table rows & footer
         private ILocator PatientRows => _page.Locator("tbody.mdc-data-table__content tr");
+        private ILocator PaginatorFooter => _page.Locator(".mat-mdc-paginator-range-label");
 
-        // Table cells
+        // 🔹 Table cells
         private ILocator FullNameCells => _page.Locator("td.mat-column-full_name");
         private ILocator DobCells => _page.Locator("td.mat-column-dob");
         private ILocator GenderCells => _page.Locator("td.mat-column-gender");
         private ILocator EmailCells => _page.Locator("td.mat-column-email");
         private ILocator PhoneCells => _page.Locator("td.mat-column-phone");
 
-        // Action buttons
+        // 🔹 Action buttons
         private ILocator EditButtons => _page.Locator("td.mat-column-action button:has(mat-icon:has-text('edit'))");
         private ILocator DeleteButtons => _page.Locator("td.mat-column-action button:has(mat-icon:has-text('delete'))");
 
-        // Perform search
-        public async Task SearchPatientAsync(string name)
+        // ✅ Perform search
+        // ✅ Perform search
+        public async Task SearchPatientAsync(string name, int timeoutMs = 10000)
         {
             await SearchInput.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             await SearchInput.FillAsync(name);
             await SearchButton.ClickAsync();
 
-            // Wait for rows to refresh
-            await PatientRows.First.WaitForAsync(new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Attached,
-                Timeout = 10000
-            });
+            // 🔹 Wait until either rows appear OR "0 of 0" footer is shown
+            await Task.WhenAny(
+                PatientRows.First.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = timeoutMs
+                }),
+                PaginatorFooter.Filter(new() { HasTextString = "0 of 0" })
+                               .WaitForAsync(new LocatorWaitForOptions
+                               {
+                                   State = WaitForSelectorState.Visible,
+                                   Timeout = timeoutMs
+                               })
+            );
         }
 
-        // Get all displayed names
+
+        // ✅ Get all displayed names
         public async Task<List<string>> GetDisplayedPatientNamesAsync()
         {
             var rowCount = await PatientRows.CountAsync();
@@ -64,7 +75,7 @@ namespace PracticeManagementSystem.Pages
             return names;
         }
 
-        // Get details of the first row
+        // ✅ Get details of the first row
         public async Task<(string Name, string Dob, string Gender, string Email, string Phone)> GetFirstPatientRowAsync()
         {
             var rowCount = await PatientRows.CountAsync();
@@ -82,7 +93,7 @@ namespace PracticeManagementSystem.Pages
             return (name, dob, gender, email, phone);
         }
 
-        // Check if a patient with specific name exists
+        // ✅ Check if a patient with specific name exists
         public async Task<bool> IsPatientDisplayedAsync(string name)
         {
             var names = await GetDisplayedPatientNamesAsync();
@@ -92,31 +103,24 @@ namespace PracticeManagementSystem.Pages
         // ✅ Open Appointments for the first patient row
         public async Task OpenFirstPatientAppointmentsAsync(int timeoutMs = 15000)
         {
-            // Wait for rows
-            await PatientRows.First.WaitForAsync(new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Attached,
-                Timeout = timeoutMs
-            });
+            var rowCount = await PatientRows.CountAsync();
+            if (rowCount == 0)
+                throw new InvalidOperationException("No patients available to open appointments.");
 
             var firstRow = PatientRows.First;
 
-            // Find the appointment button in the first row
             var appointmentButton = firstRow.Locator("button[mattooltip='View Appointments']");
-
             if (await appointmentButton.CountAsync() == 0)
                 appointmentButton = firstRow.Locator("button:has(mat-icon:has-text('event'))");
 
             if (await appointmentButton.CountAsync() == 0)
                 throw new InvalidOperationException("No appointment button found in the first patient row.");
 
-            // Ensure visible + click
             await appointmentButton.ScrollIntoViewIfNeededAsync();
             await appointmentButton.ClickAsync();
 
-            // ✅ Wait for Appointments page to load
+            // Wait for Appointments page
             await _page.Locator("mat-card-title")
-                .Or(_page.GetByText("Patient Name:", new() { Exact = false }))
                 .First
                 .WaitForAsync(new LocatorWaitForOptions
                 {
@@ -124,5 +128,9 @@ namespace PracticeManagementSystem.Pages
                     Timeout = timeoutMs
                 });
         }
+
+        // ✅ Helpers
+        public async Task<int> GetPatientRowCountAsync() => await PatientRows.CountAsync();
+        public async Task<string> GetFooterTextAsync() => (await PaginatorFooter.InnerTextAsync()).Trim();
     }
 }
