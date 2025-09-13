@@ -1,5 +1,6 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Threading.Tasks;
 
 namespace PracticeManagementSystem.Utils
@@ -15,9 +16,16 @@ namespace PracticeManagementSystem.Utils
         public static async Task ClassInit(TestContext context)
         {
             _playwright = await Playwright.CreateAsync();
+
+            // Detect if running inside Azure Pipelines
+            bool isCi = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD"));
+
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
-                Headless = false
+                Headless = isCi ? true : false,
+                Args = isCi
+                    ? new[] { "--no-sandbox", "--disable-setuid-sandbox" } 
+                    : Array.Empty<string>() 
             });
         }
 

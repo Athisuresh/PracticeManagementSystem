@@ -1,31 +1,34 @@
 ﻿trigger:
-- main  # or AutomationProject if that's your working branch
+- main   # or AutomationProject if that’s your working branch
 
 pool:
   vmImage: 'windows-latest'
 
 steps:
+# Setup .NET
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '8.0.x'
 
+# Restore dependencies
 - script: dotnet restore
   displayName: 'Restore dependencies'
 
+# Build project
 - script: dotnet build --configuration Release
   displayName: 'Build project'
 
-# ✅ Correct way to install Playwright browsers
-- script: dotnet tool install --global Microsoft.Playwright.CLI
-  displayName: 'Install Playwright CLI'
-
-- script: pwsh -c "playwright install --with-deps"
+# ✅ Install Playwright and required browsers
+- script: |
+    npx playwright install --with-deps
   displayName: 'Install Playwright browsers'
 
+# Run tests (Playwright will run headless in CI)
 - script: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
   displayName: 'Run Playwright Tests'
 
+# Publish test results to Azure DevOps
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'VSTest'
