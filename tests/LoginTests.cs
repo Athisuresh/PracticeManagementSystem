@@ -12,7 +12,7 @@ namespace PracticeManagementSystem.Tests
     public class LoginTests : TestBase
     {
         [TestMethod]
-        public async Task User_Can_Login_With_Valid_Credentials()
+        public async Task User_Can_LoginWith_ValidCredentials()
         {
             var loginPage = new LoginPage(_page);
             await loginPage.NavigateAsync(ConfigManager.BaseUrl);

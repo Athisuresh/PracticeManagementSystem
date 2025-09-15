@@ -9,7 +9,7 @@ namespace PracticeManagementSystem.Tests
     public class PatientAppointmentsTests : TestBase
     {
         [TestMethod]
-        public async Task User_Can_View_Appointments_For_Patient()
+        public async Task User_Can_ViewAppointments_ForPatient()
         {
             // Step 1: Login
             var loginPage = new LoginPage(_page);

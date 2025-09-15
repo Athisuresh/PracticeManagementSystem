@@ -9,7 +9,7 @@ namespace PracticeManagementSystem.Tests
     public class PatientSearchTests : TestBase
     {
         [TestMethod]
-        public async Task User_Can_Search_And_View_Patient_Details()
+        public async Task User_CanSearch_AndView_PatientDetails()
         {
             var loginPage = new LoginPage(_page);
             await loginPage.NavigateAsync(ConfigManager.BaseUrl);
@@ -32,7 +32,7 @@ namespace PracticeManagementSystem.Tests
 
 
         [TestMethod]
-        public async Task User_Searches_For_NonExistent_Patient_Should_See_No_Results()
+        public async Task User_SearchesFor_NonExistent_PatientShouldSeeNoResults()
         {
             // Step 1: Login
             var loginPage = new LoginPage(_page);
